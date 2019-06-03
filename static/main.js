@@ -10,19 +10,14 @@ class Profile {
 	}
 
 	createUser(callback) {
-		let username = this.username;
-		let firstName = this.name.firstName;
-		let lastName = this.name.lastName;
-		let password = this.password;
-
 		return ApiConnector.createUser(
 		{
-            username,
-            name: { firstName, lastName },
-            password
+            username: this.username,
+            name: this.name,
+            password: this.password
         },
 		(err, data) => {
-			console.log(`Creating user ${username}`);
+			console.log(`Creating user ${this.username}`);
 			callback(err, data);
 		});
 	}
@@ -58,17 +53,19 @@ class Profile {
 	}
 }
 
-function getStocks() {
-	return setInterval(ApiConnector.getStocks( (err, data) => {
-		if (err) {
-			console.log('Failed to get stocks info');
-		} else {
-			console.log('Getting stocks info');
-		}
-	}), 1000);
+function getStocks(callback) {
+    return ApiConnector.getStocks((err, data) => {
+        console.log(`Getting stocks info`);
+        callback(err, data[99]); // здесь берём только один элемент возвращаемого массива
+    });
 }
 
-getStocks();
+getStocks((err, data) => {
+	if (err) {
+			console.error('Error during getting stocks');
+	}
+	const stocksInfo = data;
+});
 
 function main() {
 	const ivan = new Profile({
@@ -76,7 +73,6 @@ function main() {
         name: { firstName: 'Ivan', lastName: 'Chernyshev' },
         password: 'ivanspass',
     });
-    // сначала создаем и авторизуем пользователя
 
 	const petya = new Profile({
 		username: 'petya',
@@ -89,8 +85,17 @@ function main() {
 			console.log('Failed to create user');
 		} else {
 			console.log('Petya is created!');
+			petya.performLogin((err, data) => {
+				if (err) {
+					console.error('Failed to login');                
+				} else {
+					console.log('Petya is authorized');
+				}
+			});
 		}
 	});
+
+	
 
 	ivan.createUser( (err, data) => {
 		if (err) {
