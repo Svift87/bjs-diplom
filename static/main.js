@@ -56,16 +56,11 @@ class Profile {
 function getStocks(callback) {
     return ApiConnector.getStocks((err, data) => {
         console.log(`Getting stocks info`);
-        callback(err, data[99]); // здесь берём только один элемент возвращаемого массива
+        callback(err, data[99]);
     });
 }
 
-getStocks((err, data) => {
-	if (err) {
-			console.error('Error during getting stocks');
-	}
-	const stocksInfo = data;
-});
+
 
 function main() {
 	const ivan = new Profile({
@@ -93,10 +88,14 @@ function main() {
 				}
 			});
 		}
-	});
-
+	});	
+	getStocks((err, data) => {
+		if (err) {
+			console.error('Error during getting stocks');
+		}
+		const stocksInfo = data;
+		const wallet = { currency: 'EUR', amount: 500000 };
 	
-
 	ivan.createUser( (err, data) => {
 		if (err) {
 			console.log('Failed to create user');
@@ -107,7 +106,7 @@ function main() {
 					console.log('Failed to login');
 				} else {
 					console.log('Ivan is authorized');
-					ivan.addMoney({ currency: 'EUR', amount: 500000 }, (err, data) => {
+					ivan.addMoney(wallet, (err, data) => {
 						if (err) {
 							console.error('Error during adding money to Ivan');
 						} else {
@@ -116,7 +115,8 @@ function main() {
 								if (err) {
 									console.log('Error during conversion');
 								} else {
-									console.log('Converted to coins ', { name: {firstName: 'Ivan', lastName: 'Ivanov'}, wallet: {amount: 36000, currency: 'NETCOIN'}, username: 'ivan' });
+									const walletAmount = stocksInfo.NETCOIN_EUR * wallet.amount;
+									console.log('Converted to coins ', { name: {firstName: 'Ivan', lastName: 'Ivanov'}, wallet: {amount: walletAmount, currency: 'NETCOIN'}, username: 'ivan' });
 									ivan.transferMoney({ to: 'petya', amount: 36000 }, (err, data) => {
 										if (err) {
 											console.log('Failed to transfer 36000 Netcoins');
@@ -132,6 +132,7 @@ function main() {
 		    });
 		}
 	});
+});
 
 }
 
